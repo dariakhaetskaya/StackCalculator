@@ -4,5 +4,5 @@ import java.util.Map;
 import java.util.Stack;
 
 public interface Command {
-    void execute(String[] args, CalcContext ctx);
+    void execute(String[] args, CalcContext ctx) throws CalcExeption;
 }

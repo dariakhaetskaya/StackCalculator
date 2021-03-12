@@ -1,5 +1,7 @@
 package ru.nsu.fit.daria.calc;
 
+import ru.nsu.fit.daria.calc.commands.StackSize;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -20,12 +22,25 @@ public class CommandFactory {
         try(var in = Main.class.getResourceAsStream("commands.properties")){
             Properties props = new Properties();
             props.load(in);
-            System.out.println(props);
+
             for (var name: props.stringPropertyNames()){
                 String clsName = props.getProperty(name);
-                var cmd = (Command)Class.forName(clsName).newInstance();
-                commands.put(name, cmd);
+                Class<?> aClass = Class.forName(clsName);
+                var cmd = (Command)aClass.forName(clsName).getDeclaredConstructor().newInstance();
+                StackSize stackSize =  aClass.getMethod("execute", String[].class, CalcContext.class).getAnnotation(StackSize.class);
+
+                Command proxyCommand = new Command() {
+                    @Override
+                    public void execute(String[] args, CalcContext ctx) throws  CalcExeption {
+                        if (stackSize != null && stackSize.value() > ctx.getStack().size()){
+                            throw new CalcExeption(name + " expects at least " + stackSize.value() + " elements in stack");
+                        }
+                        cmd.execute(args, ctx);
+                    }
+                };
+                commands.put(name, proxyCommand);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

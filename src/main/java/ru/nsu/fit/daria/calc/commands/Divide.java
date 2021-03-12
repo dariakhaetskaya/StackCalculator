@@ -7,6 +7,7 @@ import java.util.Deque;
 
 public class Divide implements Command {
     @Override
+    @StackSize(2)
     public void execute(String[] args, CalcContext ctx) {
         Deque<Double> stack = ctx.getStack();
         var v1 = stack.removeFirst();
